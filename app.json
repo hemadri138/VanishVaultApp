@@ -16,13 +16,18 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/vanishvault.png",
         "backgroundColor": "#130f36"
-      }
+      },
+      "package": "com.hemadri1316.vanishvaultexpo"
     },
     "web": {
       "favicon": "./assets/vanishvault.png"
     },
-    "assetBundlePatterns": ["**/*"],
-    "plugins": ["expo-router"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "plugins": [
+      "expo-router"
+    ],
     "experiments": {
       "typedRoutes": true
     }
