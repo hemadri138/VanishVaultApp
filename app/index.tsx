@@ -18,7 +18,7 @@ export default function HomeScreen() {
           </View>
 
           <Card color={c.card}>
-            <Text style={[styles.title, { color: c.text }]}>Private media sharing for mobile.</Text>
+            <Text style={[styles.title, { color: c.text }]}>Private media sharing</Text>
             <Text style={[styles.subtitle, { color: c.muted }]}>Upload media, enforce expiry rules, and share secure view links.</Text>
             <View style={{ gap: 10, marginTop: 14 }}>
               <PrimaryButton label="Login" onPress={() => router.push('/(auth)/login')} color={c.primary} />

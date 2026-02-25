@@ -1,9 +1,10 @@
 import { deleteDoc, doc, onSnapshot, collection, orderBy, query, where } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
-import { Redirect } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
+import { Redirect, router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import React, { useEffect, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FileCard } from '@/components/FileCard';
 import { UploadCard } from '@/components/UploadCard';
@@ -90,7 +91,12 @@ export default function DashboardScreen() {
     <Screen bg={c.bg}>
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <Card color={c.card}>
-          <Text style={[styles.title, { color: c.text }]}>Dashboard</Text>
+          <View style={styles.headerRow}>
+            <Text style={[styles.title, { color: c.text }]}>Dashboard</Text>
+            <Pressable onPress={() => router.push('/(app)/profile')} hitSlop={8}>
+              <Ionicons name="person-circle-outline" size={28} color={c.primary} />
+            </Pressable>
+          </View>
           <Text style={{ color: c.muted }}>{activeCount} active file(s), {files.length} total uploads.</Text>
         </Card>
 
@@ -167,4 +173,7 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({ title: { fontSize: 22, fontWeight: '800' } });
+const styles = StyleSheet.create({
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  title: { fontSize: 22, fontWeight: '800' }
+});
