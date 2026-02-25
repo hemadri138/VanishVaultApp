@@ -4,8 +4,23 @@
     "slug": "vanishvault-expo",
     "scheme": "vanishvault",
     "version": "1.0.0",
+    "icon": "./assets/vanishvault.png",
     "orientation": "portrait",
     "userInterfaceStyle": "dark",
+    "splash": {
+      "image": "./assets/vanishvault.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#130f36"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/vanishvault.png",
+        "backgroundColor": "#130f36"
+      }
+    },
+    "web": {
+      "favicon": "./assets/vanishvault.png"
+    },
     "assetBundlePatterns": ["**/*"],
     "plugins": ["expo-router"],
     "experiments": {
