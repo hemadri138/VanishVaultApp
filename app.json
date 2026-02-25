@@ -5,7 +5,7 @@
     "scheme": "vanishvault",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "dark",
     "assetBundlePatterns": ["**/*"],
     "plugins": ["expo-router"],
     "experiments": {

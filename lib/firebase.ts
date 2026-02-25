@@ -1,5 +1,5 @@
 import { getApp, getApps, initializeApp } from 'firebase/app';
-import { getAuth } from 'firebase/auth';
+import { ActionCodeSettings, getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getStorage } from 'firebase/storage';
 
@@ -20,6 +20,17 @@ export const isFirebaseConfigured = Boolean(
     firebaseConfig.messagingSenderId &&
     firebaseConfig.appId
 );
+
+const verificationRedirectUrl =
+  process.env.EXPO_PUBLIC_EMAIL_VERIFICATION_URL ||
+  (firebaseConfig.authDomain ? `https://${firebaseConfig.authDomain}/__/auth/action` : undefined);
+
+export const emailVerificationActionSettings: ActionCodeSettings | undefined = verificationRedirectUrl
+  ? {
+      url: verificationRedirectUrl,
+      handleCodeInApp: false
+    }
+  : undefined;
 
 const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 

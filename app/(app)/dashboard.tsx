@@ -1,6 +1,5 @@
 import { deleteDoc, doc, onSnapshot, collection, orderBy, query, where } from 'firebase/firestore';
 import { deleteObject, ref } from 'firebase/storage';
-import { Ionicons } from '@expo/vector-icons';
 import { Redirect, router } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import React, { useEffect, useMemo, useState } from 'react';
@@ -23,6 +22,8 @@ export default function DashboardScreen() {
   const [files, setFiles] = useState<VaultFile[]>([]);
   const [filesLoaded, setFilesLoaded] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<VaultFile | null>(null);
+  const profileName = user?.displayName?.trim() || user?.email?.split('@')[0] || 'User';
+  const profileInitial = profileName.charAt(0).toUpperCase();
 
   useEffect(() => {
     if (!user) return;
@@ -92,9 +93,12 @@ export default function DashboardScreen() {
       <ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
         <Card color={c.card}>
           <View style={styles.headerRow}>
-            <Text style={[styles.title, { color: c.text }]}>Dashboard</Text>
-            <Pressable onPress={() => router.push('/(app)/profile')} hitSlop={8}>
-              <Ionicons name="person-circle-outline" size={28} color={c.primary} />
+            <View>
+              <Text style={[styles.title, { color: c.text }]}>Dashboard</Text>
+              <Text style={{ color: c.muted, marginTop: 2 }}>Hi, {profileName}</Text>
+            </View>
+            <Pressable onPress={() => router.push('/(app)/profile')} hitSlop={8} style={[styles.avatar, { borderColor: c.soft }]}>
+              <Text style={[styles.avatarText, { color: c.primary }]}>{profileInitial}</Text>
             </Pressable>
           </View>
           <Text style={{ color: c.muted }}>{activeCount} active file(s), {files.length} total uploads.</Text>
@@ -175,5 +179,15 @@ export default function DashboardScreen() {
 
 const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 22, fontWeight: '800' }
+  title: { fontSize: 22, fontWeight: '800' },
+  avatar: {
+    width: 38,
+    height: 38,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff12'
+  },
+  avatarText: { fontSize: 16, fontWeight: '800' }
 });

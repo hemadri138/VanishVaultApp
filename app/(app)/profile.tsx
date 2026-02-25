@@ -10,10 +10,12 @@ import { auth } from '@/lib/firebase';
 
 export default function ProfileScreen() {
   const { user, loading } = useAuth();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
   const { showToast } = useToast();
   const c = palette[theme];
   const [loggingOut, setLoggingOut] = useState(false);
+  const profileName = user?.displayName?.trim() || user?.email?.split('@')[0] || 'User';
+  const profileInitial = profileName.charAt(0).toUpperCase();
 
   const onLogout = async () => {
     try {
@@ -42,13 +44,16 @@ export default function ProfileScreen() {
               <Text style={{ color: c.primary, fontWeight: '700' }}>Back</Text>
             </Pressable>
           </View>
-          <Text style={{ color: c.muted, marginTop: 6 }}>{user.email ?? 'No email'}</Text>
+          <View style={styles.profileRow}>
+            <View style={[styles.avatar, { borderColor: c.soft }]}>
+              <Text style={[styles.avatarText, { color: c.primary }]}>{profileInitial}</Text>
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={{ color: c.text, fontSize: 18, fontWeight: '800' }}>{profileName}</Text>
+              <Text style={{ color: c.muted, marginTop: 4 }}>{user.email ?? 'No email'}</Text>
+            </View>
+          </View>
           <View style={{ marginTop: 12, gap: 10 }}>
-            <PrimaryButton
-              label={theme === 'dark' ? 'Switch to Light Theme' : 'Switch to Dark Theme'}
-              onPress={toggleTheme}
-              color={c.primary}
-            />
             <PrimaryButton
               label={loggingOut ? 'Logging out...' : 'Logout'}
               onPress={onLogout}
@@ -65,5 +70,16 @@ export default function ProfileScreen() {
 const styles = StyleSheet.create({
   wrap: { flex: 1, justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: 22, fontWeight: '800' }
+  title: { fontSize: 22, fontWeight: '800' },
+  profileRow: { marginTop: 10, flexDirection: 'row', alignItems: 'center', gap: 12 },
+  avatar: {
+    width: 54,
+    height: 54,
+    borderRadius: 999,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#ffffff12'
+  },
+  avatarText: { fontSize: 22, fontWeight: '800' }
 });

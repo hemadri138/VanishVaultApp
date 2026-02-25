@@ -1,9 +1,9 @@
 import { FirebaseError } from 'firebase/app';
-import { signInWithEmailAndPassword } from 'firebase/auth';
+import { sendEmailVerification, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TextInput, View } from 'react-native';
-import { auth, isFirebaseConfigured } from '@/lib/firebase';
+import { auth, emailVerificationActionSettings, isFirebaseConfigured } from '@/lib/firebase';
 import { Card, palette, PrimaryButton, Screen } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
 import { useToast } from '@/context/ToastContext';
@@ -20,7 +20,18 @@ export default function LoginScreen() {
     try {
       setLoading(true);
       if (!isFirebaseConfigured) throw new Error('Missing Firebase env values in Expo app.');
-      await signInWithEmailAndPassword(auth, email.trim(), password);
+      const userCredential = await signInWithEmailAndPassword(auth, email.trim(), password);
+      if (!userCredential.user.emailVerified) {
+        await sendEmailVerification(userCredential.user, emailVerificationActionSettings).catch(() => undefined);
+        await signOut(auth);
+        showToast({
+          title: 'Email not verified',
+          message: 'Please verify your email. A new link has been sent.',
+          kind: 'info',
+          durationMs: 3500
+        });
+        return;
+      }
       router.replace('/(app)/dashboard');
     } catch (error) {
       if (error instanceof FirebaseError) showToast({ title: 'Login Failed', message: error.code, kind: 'error' });
