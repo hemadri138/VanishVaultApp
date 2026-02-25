@@ -2,11 +2,13 @@ import { doc, getDoc, updateDoc, increment, deleteDoc, arrayUnion } from 'fireba
 import { deleteObject, getDownloadURL, ref } from 'firebase/storage';
 import { useLocalSearchParams, router } from 'expo-router';
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, Text, View } from 'react-native';
+import { ScrollView, Text, View } from 'react-native';
+import * as ScreenCapture from 'expo-screen-capture';
 import { CountdownTimer } from '@/components/CountdownTimer';
 import { SecureViewer } from '@/components/SecureViewer';
 import { palette, Screen } from '@/components/ui';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/context/ToastContext';
 import { useTheme } from '@/hooks/useTheme';
 import { db, storage } from '@/lib/firebase';
 
@@ -26,10 +28,18 @@ export default function SecureViewScreen() {
   const { fileId } = useLocalSearchParams<{ fileId: string }>();
   const { user } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const c = palette[theme];
   const [status, setStatus] = useState<'loading' | 'blocked' | 'expired' | 'destroyed' | 'ready'>('loading');
   const [file, setFile] = useState<ViewerFile | null>(null);
   const [signedUrl, setSignedUrl] = useState('');
+
+  useEffect(() => {
+    ScreenCapture.preventScreenCaptureAsync().catch(() => undefined);
+    return () => {
+      ScreenCapture.allowScreenCaptureAsync().catch(() => undefined);
+    };
+  }, []);
 
   const loadFile = useCallback(async () => {
     if (!fileId) {
@@ -103,9 +113,9 @@ export default function SecureViewScreen() {
   useEffect(() => {
     if (!file?.selfDestructAfterView || status !== 'ready') return;
     destroyNow().catch(() => {
-      Alert.alert('Self-destruct failed', 'Please refresh.');
+      showToast({ title: 'Self-destruct failed', message: 'Please refresh.', kind: 'error' });
     });
-  }, [destroyNow, file?.selfDestructAfterView, status]);
+  }, [destroyNow, file?.selfDestructAfterView, showToast, status]);
 
   const viewerLabel = useMemo(() => user?.email ?? 'guest-viewer', [user?.email]);
 

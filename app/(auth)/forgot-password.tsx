@@ -2,13 +2,15 @@ import { FirebaseError } from 'firebase/app';
 import { sendPasswordResetEmail } from 'firebase/auth';
 import { Link } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 import { Card, palette, PrimaryButton, Screen } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/context/ToastContext';
 
 export default function ForgotPasswordScreen() {
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const c = palette[theme];
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -18,11 +20,11 @@ export default function ForgotPasswordScreen() {
       setLoading(true);
       if (!isFirebaseConfigured) throw new Error('Missing Firebase env values in Expo app.');
       await sendPasswordResetEmail(auth, email.trim());
-      Alert.alert('Email Sent', 'Check your inbox for reset instructions.');
+      showToast({ title: 'Email Sent', message: 'Check your inbox for reset instructions.', kind: 'success' });
     } catch (error) {
-      if (error instanceof FirebaseError) Alert.alert('Reset Failed', error.code);
-      else if (error instanceof Error) Alert.alert('Reset Failed', error.message);
-      else Alert.alert('Reset Failed', 'Try again.');
+      if (error instanceof FirebaseError) showToast({ title: 'Reset Failed', message: error.code, kind: 'error' });
+      else if (error instanceof Error) showToast({ title: 'Reset Failed', message: error.message, kind: 'error' });
+      else showToast({ title: 'Reset Failed', message: 'Try again.', kind: 'error' });
     } finally {
       setLoading(false);
     }
@@ -34,7 +36,7 @@ export default function ForgotPasswordScreen() {
         <Text style={[styles.title, { color: c.text }]}>Forgot Password</Text>
         <Text style={{ color: c.muted, marginBottom: 12 }}>Enter your account email to receive a reset link.</Text>
         <TextInput placeholder="Email" placeholderTextColor={c.muted} style={[styles.input, { color: c.text, borderColor: c.soft }]} autoCapitalize="none" value={email} onChangeText={setEmail} />
-        <PrimaryButton label={loading ? 'Sending...' : 'Send reset link'} onPress={resetPassword} disabled={loading} color={c.primary} />
+        <PrimaryButton label={loading ? 'Sending...' : 'Send reset link'} onPress={resetPassword} loading={loading} color={c.primary} />
         <View style={styles.links}><Link href="/(auth)/login" style={{ color: c.primary }}>Back to login</Link></View>
       </Card>
     </Screen>

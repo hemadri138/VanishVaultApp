@@ -1,7 +1,6 @@
 import React, { useMemo } from 'react';
 import { Image, StyleSheet, Text, View } from 'react-native';
 import { WebView } from 'react-native-webview';
-import * as ScreenCapture from 'expo-screen-capture';
 
 type Props = {
   fileType: 'image' | 'video' | 'pdf';
@@ -14,8 +13,6 @@ type Props = {
 };
 
 export function SecureViewer({ fileType, uri, viewerLabel, borderColor, textColor, mutedColor, cardColor }: Props) {
-  ScreenCapture.usePreventScreenCapture();
-
   const watermark = useMemo(() => `${viewerLabel} • ${new Date().toLocaleString()}`, [viewerLabel]);
 
   if (fileType === 'image') {

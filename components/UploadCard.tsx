@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Alert, Image, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { Image, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
 import * as DocumentPicker from 'expo-document-picker';
 import { Timestamp, collection, doc, setDoc } from 'firebase/firestore';
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
@@ -7,6 +7,7 @@ import { db, storage } from '@/lib/firebase';
 import { useAuth } from '@/context/AuthContext';
 import { ExpirySelector } from '@/components/ExpirySelector';
 import { PrimaryButton } from '@/components/ui';
+import { useToast } from '@/context/ToastContext';
 
 function inferType(mimeType: string) {
   if (mimeType.startsWith('image/')) return 'image';
@@ -30,6 +31,7 @@ export function UploadCard({
   cardColor: string;
 }) {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [asset, setAsset] = useState<DocumentPicker.DocumentPickerAsset | null>(null);
   const [expiry, setExpiry] = useState<'10m' | '1h' | '24h' | 'custom'>('1h');
   const [customDateTime, setCustomDateTime] = useState('');
@@ -69,11 +71,11 @@ export function UploadCard({
 
   const upload = async () => {
     if (!asset) {
-      Alert.alert('No file selected', 'Pick an image, video, or PDF first.');
+      showToast({ title: 'No file selected', message: 'Pick an image, video, or PDF first.', kind: 'info' });
       return;
     }
     if (!user) {
-      Alert.alert('Not signed in', 'Please sign in again and retry.');
+      showToast({ title: 'Not signed in', message: 'Please sign in again and retry.', kind: 'error' });
       return;
     }
 
@@ -109,10 +111,10 @@ export function UploadCard({
       setEmails('');
       setSelfDestructAfter10Sec(false);
       setSelfDestructAfterView(false);
-      Alert.alert('Upload complete', 'Secure link generated successfully.');
+      showToast({ title: 'Upload complete', message: 'Secure link generated successfully.', kind: 'success' });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Upload failed. Please try again.';
-      Alert.alert('Upload Failed', message);
+      showToast({ title: 'Upload Failed', message, kind: 'error' });
     } finally {
       setUploading(false);
     }
@@ -179,7 +181,13 @@ export function UploadCard({
           <Switch value={selfDestructAfter10Sec} onValueChange={setSelfDestructAfter10Sec} />
         </View>
 
-        <PrimaryButton label={uploading ? 'Uploading...' : 'Upload & Generate Link'} onPress={upload} disabled={uploading || !asset} color={primaryColor} />
+        <PrimaryButton
+          label={uploading ? 'Uploading...' : 'Upload & Generate Link'}
+          onPress={upload}
+          disabled={!asset}
+          loading={uploading}
+          color={primaryColor}
+        />
       </ScrollView>
     </View>
   );

@@ -3,7 +3,8 @@ import { deleteObject, ref } from 'firebase/storage';
 import { Redirect } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import React, { useEffect, useMemo, useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ConfirmDialog } from '@/components/ConfirmDialog';
 import { FileCard } from '@/components/FileCard';
 import { UploadCard } from '@/components/UploadCard';
 import { Card, palette, Screen } from '@/components/ui';
@@ -11,13 +12,16 @@ import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
 import { db, storage } from '@/lib/firebase';
 import { VaultFile } from '@/types';
+import { useToast } from '@/context/ToastContext';
 
 export default function DashboardScreen() {
   const { user, loading } = useAuth();
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const c = palette[theme];
   const [files, setFiles] = useState<VaultFile[]>([]);
   const [filesLoaded, setFilesLoaded] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<VaultFile | null>(null);
 
   useEffect(() => {
     if (!user) return;
@@ -48,12 +52,12 @@ export default function DashboardScreen() {
       },
       (error) => {
         setFilesLoaded(true);
-        Alert.alert('Load Failed', error.message);
+        showToast({ title: 'Load Failed', message: error.message, kind: 'error' });
       }
     );
 
     return () => unsub();
-  }, [user]);
+  }, [showToast, user]);
 
   const activeCount = useMemo(() => files.filter((f) => f.expiresAt.getTime() > Date.now()).length, [files]);
 
@@ -64,12 +68,13 @@ export default function DashboardScreen() {
       // ignore missing storage object
     }
     await deleteDoc(doc(db, 'files', file.id));
+    showToast({ title: 'Deleted', message: `${file.fileName} removed.`, kind: 'success' });
   };
 
   const onCopy = async (id: string) => {
     const link = `vanishvault://view/${id}`;
     await Clipboard.setStringAsync(link);
-    Alert.alert('Copied', 'Secure link copied to clipboard.');
+    showToast({ title: 'Copied', message: 'Secure link copied to clipboard.', kind: 'success' });
   };
 
   if (loading) {
@@ -94,7 +99,7 @@ export default function DashboardScreen() {
         <UploadCard
           onUploadComplete={(id) => {
             const link = `vanishvault://view/${id}`;
-            Alert.alert('Share link generated', link);
+            showToast({ title: 'Share link generated', message: link, kind: 'success', durationMs: 3500 });
           }}
           textColor={c.text}
           mutedColor={c.muted}
@@ -124,7 +129,7 @@ export default function DashboardScreen() {
           <FileCard
             key={file.id}
             file={file}
-            onDelete={onDelete}
+            onDelete={(item) => setPendingDelete(item)}
             onCopy={onCopy}
             textColor={c.text}
             mutedColor={c.muted}
@@ -134,6 +139,30 @@ export default function DashboardScreen() {
           />
         ))}
       </ScrollView>
+
+      <ConfirmDialog
+        visible={Boolean(pendingDelete)}
+        title="Delete File?"
+        message={
+          pendingDelete
+            ? `Are you sure you want to delete "${pendingDelete.fileName}"? This cannot be undone.`
+            : ''
+        }
+        onCancel={() => setPendingDelete(null)}
+        onConfirm={() => {
+          if (!pendingDelete) return;
+          onDelete(pendingDelete).catch((error) => {
+            const message = error instanceof Error ? error.message : 'Could not delete file.';
+            showToast({ title: 'Delete Failed', message, kind: 'error' });
+          });
+          setPendingDelete(null);
+        }}
+        cardColor={c.card}
+        textColor={c.text}
+        mutedColor={c.muted}
+        borderColor={c.soft}
+        dangerColor={c.danger}
+      />
     </Screen>
   );
 }

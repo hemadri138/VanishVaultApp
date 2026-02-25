@@ -2,13 +2,15 @@ import { FirebaseError } from 'firebase/app';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { Link, router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { auth, isFirebaseConfigured } from '@/lib/firebase';
 import { Card, palette, PrimaryButton, Screen } from '@/components/ui';
 import { useTheme } from '@/hooks/useTheme';
+import { useToast } from '@/context/ToastContext';
 
 export default function LoginScreen() {
   const { theme } = useTheme();
+  const { showToast } = useToast();
   const c = palette[theme];
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -21,9 +23,9 @@ export default function LoginScreen() {
       await signInWithEmailAndPassword(auth, email.trim(), password);
       router.replace('/(app)/dashboard');
     } catch (error) {
-      if (error instanceof FirebaseError) Alert.alert('Login Failed', error.code);
-      else if (error instanceof Error) Alert.alert('Login Failed', error.message);
-      else Alert.alert('Login Failed', 'Try again.');
+      if (error instanceof FirebaseError) showToast({ title: 'Login Failed', message: error.code, kind: 'error' });
+      else if (error instanceof Error) showToast({ title: 'Login Failed', message: error.message, kind: 'error' });
+      else showToast({ title: 'Login Failed', message: 'Try again.', kind: 'error' });
     } finally {
       setLoading(false);
     }
@@ -36,7 +38,7 @@ export default function LoginScreen() {
           <Text style={[styles.title, { color: c.text }]}>Sign In</Text>
           <TextInput placeholder="Email" placeholderTextColor={c.muted} style={[styles.input, { color: c.text, borderColor: c.soft }]} autoCapitalize="none" value={email} onChangeText={setEmail} />
           <TextInput placeholder="Password" placeholderTextColor={c.muted} style={[styles.input, { color: c.text, borderColor: c.soft }]} secureTextEntry value={password} onChangeText={setPassword} />
-          <PrimaryButton label={loading ? 'Signing in...' : 'Login'} onPress={login} disabled={loading} color={c.primary} />
+          <PrimaryButton label={loading ? 'Signing in...' : 'Login'} onPress={login} loading={loading} color={c.primary} />
           <View style={styles.links}><Link href="/(auth)/forgot-password" style={{ color: c.primary }}>Forgot password?</Link></View>
           <View style={styles.links}><Link href="/(auth)/signup" style={{ color: c.primary }}>No account? Create one</Link></View>
         </Card>

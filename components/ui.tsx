@@ -39,23 +39,27 @@ export function PrimaryButton({
   label,
   onPress,
   disabled,
+  loading,
   color
 }: {
   label: string;
   onPress: () => void;
   disabled?: boolean;
+  loading?: boolean;
   color: string;
 }) {
+  const isDisabled = Boolean(disabled || loading);
+
   return (
     <Pressable
       onPress={onPress}
-      disabled={disabled}
+      disabled={isDisabled}
       style={({ pressed }) => [
         styles.button,
-        { backgroundColor: color, opacity: disabled ? 0.6 : pressed ? 0.88 : 1 }
+        { backgroundColor: color, opacity: isDisabled ? 0.6 : pressed ? 0.88 : 1 }
       ]}
     >
-      {disabled ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{label}</Text>}
+      {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>{label}</Text>}
     </Pressable>
   );
 }
