@@ -1,0 +1,15 @@
+{
+  "expo": {
+    "name": "VanishVault",
+    "slug": "vanishvault-expo",
+    "scheme": "vanishvault",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "automatic",
+    "assetBundlePatterns": ["**/*"],
+    "plugins": ["expo-router"],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}
